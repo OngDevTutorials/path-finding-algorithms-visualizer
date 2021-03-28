@@ -1,9 +1,11 @@
 <template>
   <img alt="Vue logo" src="./assets/logo.png" />
-  <Board :node="node"/>
+  <Board />
 </template>
 
 <script>
+import { mapGetters } from "vuex";
+import { SET_NODE_MAP } from "./store/mutationTypes";
 import Board from "./components/Board";
 
 export default {
@@ -11,13 +13,38 @@ export default {
   components: {
     Board,
   },
-  data() {
-    return {
-      node: {
-        id: 1,
-        status: "active",
-      },
-    };
+  computed: {
+    ...mapGetters(["nodeMap", "numberOfRows", "numberOfColumns"]),
+  },
+  mounted() {
+    const nodes = new Map();
+    for (let rowIndex = 1; rowIndex <= this.numberOfRows; rowIndex++) {
+      for (
+        let columnIndex = 1;
+        columnIndex <= this.numberOfColumns;
+        columnIndex++
+      ) {
+        const key = this.generateNodeId(rowIndex, columnIndex);
+        const node = {
+          id: key,
+          status: "default",
+          previousNode: null,
+          path: null,
+          direction: null,
+          distance: Infinity,
+          totalDistance: Infinity,
+        };
+        nodes.set(key, node);
+      }
+    }
+    this.$store.commit(SET_NODE_MAP, {
+      nodes,
+    });
+  },
+  methods: {
+    generateNodeId: (rowIndex, columnIndex) => {
+      return `node_r${rowIndex}_c${columnIndex}`;
+    },
   },
 };
 </script>
